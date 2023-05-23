@@ -46,10 +46,17 @@ class CLUB(nn.Module):  # CLUB: Mutual Information Contrastive Learning Upper Bo
         # log of conditional probability of negative sample pairs
         negative = - ((y_samples_1 - prediction_1)**2).mean(dim=1)/2./logvar.exp() 
 
+        # (positive.sum(dim=-1) - negative.sum(dim=-1)) 从正对数似然之和中减去负对数似然之和。
+        # negative.sum(dim=-1)，dim=-1 参数指定求和是沿着最后一个维度执行的
+        # 这会产生一个标量值，表示总正对数似然和负对数似然之间的差异,导致形状为 [nsample] 的张量
+        # 计算正对数似然和负对数似然之间的平均差值，作为 X 和 Y 之间互信息的估计
         return (positive.sum(dim = -1) - negative.sum(dim = -1)).mean()
 
+    # loglikeli 方法通过考虑预测均值与真实 y_samples 值之间的平方差除以对数方差的指数，并惩罚大方差来计算非标准化对数似然。 
+    # 然后，该方法对每个样本的项求和，并取样本的平均值以获得标量值
     def loglikeli(self, x_samples, y_samples): # unnormalized loglikelihood 
         mu, logvar = self.get_mu_logvar(x_samples)
+        # -logvar：此项对应于负对数方差。 它惩罚给定 x_samples 的 y_samples 预测中的大方差
         return (-(mu - y_samples)**2 /logvar.exp()-logvar).sum(dim=1).mean(dim=0)
     
     def learning_loss(self, x_samples, y_samples):
