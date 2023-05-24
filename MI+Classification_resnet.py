@@ -141,7 +141,14 @@ for loop in range(loop_num):
 
             # 输出x经过平均池化层（avgpool）。 平均池将特征图的空间维度减少到固定大小。 生成的张量 batch_x0 表示输入特征的summary
             batch_x0 = resnet18_ft.avgpool(x)
+            
+            # view() 方法允许您在保留张量数据的同时重塑张量
+            # 参数 (batch_x0.size(0), -1) 指定所需的张量形状，第一个维度 (batch_x0.size(0)) 保持原样，而第二个维度使用 -1 进行整形
+            # 使用 -1 作为第二个参数允许 PyTorch 根据输入张量的元素总数和指定的第一维自动推断大小
+            # 张量从 4D 张量（通常用于卷积特征）转换为 2D 张量，其中每一行代表一个样本，每一列代表一个展平的特征
             batch_x = batch_x0.view(batch_x0.size(0), -1)
+           
+        
             # channel
             snr = 25     #信噪比
             snr = 10**(snr/10.0)
@@ -157,16 +164,29 @@ for loop in range(loop_num):
             # print("mi_model_loss: ", model_loss)
             
             mi_optimizer.zero_grad()
+           # 您调用 tensor.backward() 时，其中张量是表示损失或其他目标的标量张量，将为所有参与损失计算的张量计算梯度
+            # 梯度将累积在每个张量的 grad 属性中
             model_loss.backward()
+            
+            # step() 函数用于根据计算出的梯度更新优化器的参数
+            # 新规则取决于特定的优化器及其配置（例如，学习率、动量
+            # 这是 mi_optimizer = torch.optim.Adam(mi_model.parameters(), LR)
+            # 在调用 optimizer.step() 之前，您需要确保您已经使用 backward() 计算了参数的梯度，并且您已经调用了 optimizer.zero_grad() 来清除优化器参数的梯度以用于下一次迭代
             mi_optimizer.step()
             mi_model.eval()
+            
+            # 对结果调用 item() 方法以将标量值提取为 Python 浮点数
             mi_value = mi_model(batch_x, batch_y).item()
             print("mi_value: ", mi_value)
+            
             # if i>75:
             #     mi_model.eval()
             #     # mi_est_values.append(mi_model(batch_x, batch_y).item())
             #     print(i,":   mutual information: ", mi_model(batch_x, batch_y).item(), end=" ")
             
+            
+            
+            # 在训练期间释放内存资源很有用
             del batch_x, batch_y
             torch.cuda.empty_cache()
         
