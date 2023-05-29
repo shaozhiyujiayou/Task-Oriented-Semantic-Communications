@@ -103,6 +103,7 @@ class CamExtractor():
         # index = [26, 22, 3, 2, 9, 30, 7, 31, 4, 29, 28, 8, 23, 27, 5, 21, 24, 14, 12, 20, 15, 10, 11, 18, 1, 19, 6, 25, 0, 13, 17, 16]
         x[:, index] = conv_output[:, index]
         x = x.view(x.size(0), -1)  # Flatten
+        # 产生二维表示，其中一维表示样本，另一维表示每个样本的展平特征向量
         norm0 = torch.norm(x, dim=1)
         norm0 = norm0.view(norm0.size(0), -1)
         x = torch.div(x, norm0)
