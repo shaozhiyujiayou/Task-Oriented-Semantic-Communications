@@ -88,6 +88,7 @@ class CamExtractor():
                 conv_output = x  # Save the convolution output on that layer
                 return conv_output, x
         # return conv_output, x
+        # conv_output is the convolution output at the target_layer 
 
     def forward_pass(self, x):
         """
