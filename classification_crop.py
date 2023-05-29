@@ -46,15 +46,15 @@ def preprocess_image(pil_im, resize_im=True):
         pil_im = pil_im.resize((128, 128), Image.ANTIALIAS)
 
     im_as_arr = np.float32(pil_im)
-    im_as_arr = im_as_arr.transpose(2, 0, 1)  # Convert array to D,W,H
+    im_as_arr = im_as_arr.transpose(2, 0, 1)  # from W,H,D TO Convert array to D,W,H
     # Normalize the channels
     for channel, _ in enumerate(im_as_arr):
         im_as_arr[channel] /= 255
         # im_as_arr[channel] -= mean[channel]
         # im_as_arr[channel] /= std[channel]
-    # Convert to float tensor
+    # Convert to float tensor :torch.from_numpy() 函数用于从 NumPy 数组创建 PyTorch 张量
     im_as_ten = torch.from_numpy(im_as_arr).float()
-    # Add one more channel to the beginning. Tensor shape = 1,3,224,224
+    # Add one more channel to the beginning. Tensor shape = 1,3,224,224 donate the batch size
     im_as_ten.unsqueeze_(0)
     # Convert to Pytorch variable
     im_as_var = Variable(im_as_ten, requires_grad=True)
